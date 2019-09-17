@@ -1,0 +1,9 @@
+{
+  "name": "pirista-slack",
+  "version": "0.0.1",
+  "dependencies": {
+    "@google-cloud/pubsub": "^0.18.0",
+    "dotenv": "^8.1.0",
+    "request": "^2.88.0"
+  }
+}
