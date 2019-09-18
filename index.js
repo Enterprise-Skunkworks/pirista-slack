@@ -17,8 +17,8 @@ exports.notifySlack = (data, context) => {
   const freshness = determineFreshness(timestamp, measure);
   const fill = measure * 100;
 
-  // Send to Slack
-  makeRequest(message, freshness, fill);
+  // Send to Slack if there is more than 5% left
+  if (fill > 5) makeRequest(message, freshness, fill);
 }
 
 // Make request
