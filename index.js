@@ -32,32 +32,32 @@ function makeRequest(message, freshness, fill) {
         text: 'Coffee Status Update',
         blocks: [
           {
-        		type: "section",
-        		text: {
-        			type: "mrkdwn",
-        			text: "*Coffee Status Update*",
-        		},
-        	},
-        	{
-        		type: "context",
-        		elements: [
-        			{
-        				type: "mrkdwn",
-        				text: `*Fill level:* ${fill}%`,
-        			},
-        			{
-        				type: "mrkdwn",
-        				text: `*Freshness:* ${freshness}`,
-        			},
-        		],
-        	},
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: "*Coffee Status Update*",
+            },
+          },
           {
-        		type: "section",
-        		text: {
-        			type: "plain_text",
-        			text: message,
-        		},
-        	},
+            type: "context",
+            elements: [
+              {
+                type: "mrkdwn",
+                text: `*Fill level:* ${fill}%`,
+              },
+              {
+                type: "mrkdwn",
+                text: `*Freshness:* ${freshness}`,
+              },
+            ],
+          },
+          {
+            type: "section",
+            text: {
+              type: "plain_text",
+              text: message,
+            },
+          },
         ],
       },
       json: true,
