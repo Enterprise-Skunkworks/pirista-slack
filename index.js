@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const request = require('request');
+const utils = require('./utils');
 
 dotenv.config();
 
@@ -10,15 +11,14 @@ dotenv.config();
  * @param {!Object} context Metadata for the event.
  */
 exports.notifySlack = (data, context) => {
-  const url = process.env.SLACK_WEBHOOK_URL;
   const { timestamp, measure } = data;
 
   const message = determineMessage(measure);
   const freshness = determineFreshness(timestamp, measure);
   const fill = measure * 100;
 
-  // Send to Slack if there is more than 5% left
-  if (fill > 5) makeRequest(message, freshness, fill);
+  // Send to Slack
+  makeRequest(message, freshness, fill);
 }
 
 // Make request
@@ -95,5 +95,36 @@ function determineMessage(measure) {
 
 // Determine freshness
 function determineFreshness(timestamp, fill) {
-  return 'Decent'; // @TODO: make freshness thing
+  // Get minutes since time of brew
+  const nowTime = Math.floor(Date.now() / 1000);
+  const timeSince = (nowTime - timestamp) / 60;
+
+  let fillFactor,
+      timeFactor;
+
+  /**
+   *  Coffee quality matrix
+   *  Vertical: minutes since brew
+   *  Horizontal: canister fill level
+   *        >90%    >70%    >50%    >30%    >15%    <15%
+   *  < 5   Amazing Amazing Awesome Awesome Great   Decent
+   *  < 45  Amazing Awesome Awesome Great   Decent  Average
+   *  < 90  Awesome Awesome Great   Decent  Average Risky
+   *  < 120 Awesome Great   Decent  Average Risky   Shady
+   *  < 240 Great   Decent  Average Risky   Shady   Shitty
+   *  > 240 Decent  Average Risky   Shady   Shitty  Don't
+   */
+  const quality = [
+    [ 'Amazing',  'Amazing',  'Awesome',  'Awesome',   'Great',  'Decent' ],
+    [ 'Amazing',  'Awesome',  'Awesome',    'Great',  'Decent', 'Average' ],
+    [ 'Awesome',  'Awesome',    'Great',   'Decent', 'Average',   'Risky' ],
+    [ 'Awesome',    'Great',   'Decent',  'Average',   'Risky',   'Shady' ],
+    [   'Great',   'Decent',  'Average',    'Risky',   'Shady',  'Shitty' ],
+    [  'Decent',  'Average',    'Risky',    'Shady',  'Shitty',  'Don\'t' ],
+  ];
+  fillFactor = utils.getFactor([0.90, 0.70, 0.50, 0.30, 0.15], fill);
+  timeFactor = utils.getFactor([5, 45, 90, 120, 240], timeSince, true);
+
+  const freshness = quality[timeFactor][fillFactor];
+  return freshness;
 }
